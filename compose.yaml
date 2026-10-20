@@ -1,0 +1,45 @@
+services:
+  app:
+    image: mercado-solidario:1.0.0
+    build: .
+    container_name: mercado-solidario
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "127.0.0.1:13100:3100"
+    volumes:
+      - mercado_data:/data
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    tmpfs:
+      - /tmp:size=32m
+    mem_limit: 512m
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+  tunnel:
+    image: cloudflare/cloudflared:2026.10.0
+    container_name: mercado-solidario-tunnel
+    restart: unless-stopped
+    command: tunnel --no-autoupdate --url http://app:3100
+    depends_on:
+      app:
+        condition: service_healthy
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    mem_limit: 128m
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+volumes:
+  mercado_data:

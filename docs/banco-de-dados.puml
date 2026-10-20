@@ -1,0 +1,181 @@
+@startuml banco-de-dados
+!pragma layout smetana
+title Mercado Solidário IBT | Modelo UML do banco SQLite
+hide methods
+hide circle
+skinparam shadowing false
+skinparam backgroundColor #FAFCFA
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #FFFFFF
+skinparam classBorderColor #789580
+skinparam classHeaderBackgroundColor #E9F1E7
+skinparam ArrowColor #6C8976
+skinparam packageBorderColor #C4D5C3
+skinparam packageBackgroundColor #F3F7F1
+skinparam linetype ortho
+left to right direction
+package "Comunidade e créditos" {
+  class families <<table>> {
+    id : INTEGER {PK}
+    name : TEXT
+    reference : TEXT
+    members : INTEGER
+    created_at : TEXT
+  }
+  class cycles <<table>> {
+    id : INTEGER {PK}
+    name : TEXT
+    start_month : TEXT
+    capacity : INTEGER
+  }
+  class enrollments <<table>> {
+    id : INTEGER {PK}
+    family_id : INTEGER {FK}
+    cycle_id : INTEGER {FK}
+    group_code : TEXT
+    monthly_credit : INTEGER
+    criteria : TEXT
+    active : INTEGER
+  }
+}
+package "Estoque e doações" {
+  class products <<table>> {
+    id : INTEGER {PK}
+    name : TEXT
+    unit : TEXT
+    minimum : INTEGER
+    active : INTEGER
+  }
+  class prices <<table>> {
+    id : INTEGER {PK}
+    product_id : INTEGER {FK}
+    effective_date : TEXT
+    credits : INTEGER
+  }
+  class donations <<table>> {
+    id : INTEGER {PK}
+    donor : TEXT
+    received_on : TEXT
+    user_id : INTEGER {FK}
+    created_at : TEXT
+  }
+  class lots <<table>> {
+    id : INTEGER {PK}
+    donation_id : INTEGER {FK}
+    product_id : INTEGER {FK}
+    code : TEXT
+    expires_on : TEXT
+    received : INTEGER
+    remaining : INTEGER
+    value_cents : INTEGER
+  }
+}
+package "Atendimento e rastreabilidade" {
+  class checkouts <<table>> {
+    id : INTEGER {PK}
+    enrollment_id : INTEGER {FK}
+    month : TEXT
+    total_credits : INTEGER
+    user_id : INTEGER {FK}
+    request_key : TEXT
+    created_at : TEXT
+  }
+  class checkout_items <<table>> {
+    id : INTEGER {PK}
+    checkout_id : INTEGER {FK}
+    product_id : INTEGER {FK}
+    price_id : INTEGER {FK}
+    quantity : INTEGER
+    unit_credits : INTEGER
+  }
+  class allocations <<table>> {
+    id : INTEGER {PK}
+    checkout_item_id : INTEGER {FK}
+    lot_id : INTEGER {FK}
+    quantity : INTEGER
+  }
+  class stock_movements <<table>> {
+    id : INTEGER {PK}
+    lot_id : INTEGER {FK}
+    checkout_item_id : INTEGER {FK, nullable}
+    kind : TEXT
+    quantity : INTEGER
+    reason : TEXT
+    user_id : INTEGER {FK}
+    created_at : TEXT
+  }
+}
+package "Acesso e auditoria" {
+  class users <<table>> {
+    id : INTEGER {PK}
+    name : TEXT
+    email : TEXT
+    password_hash : TEXT
+    role : TEXT
+    active : INTEGER
+  }
+  class sessions <<table>> {
+    token_hash : TEXT {PK}
+    user_id : INTEGER {FK}
+    csrf : TEXT
+    expires_at : INTEGER
+  }
+  class audit_log <<table>> {
+    id : INTEGER {PK}
+    user_id : INTEGER {FK}
+    action : TEXT
+    entity : TEXT
+    entity_id : INTEGER
+    detail : TEXT
+    created_at : TEXT
+  }
+  class login_attempts <<table>> {
+    key : TEXT {PK}
+    failures : INTEGER
+    locked_until : INTEGER
+  }
+  class schema_version <<table>> {
+    version : INTEGER {PK}
+  }
+}
+lots "1" -- "0..*" allocations : lot_id
+checkout_items "1" -- "0..*" allocations : checkout_item_id
+users "1" -- "0..*" audit_log : user_id
+prices "1" -- "0..*" checkout_items : price_id
+products "1" -- "0..*" checkout_items : product_id
+checkouts "1" -- "0..*" checkout_items : checkout_id
+users "1" -- "0..*" checkouts : user_id
+enrollments "1" -- "0..*" checkouts : enrollment_id
+users "1" -- "0..*" donations : user_id
+cycles "1" -- "0..*" enrollments : cycle_id
+families "1" -- "0..*" enrollments : family_id
+products "1" -- "0..*" lots : product_id
+donations "1" -- "0..*" lots : donation_id
+products "1" -- "0..*" prices : product_id
+users "1" -- "0..*" sessions : user_id
+users "1" -- "0..*" stock_movements : user_id
+checkout_items "0..1" -- "0..*" stock_movements : checkout_item_id
+lots "1" -- "0..*" stock_movements : lot_id
+note bottom of enrollments
+  UNIQUE(family_id, cycle_id)
+  Até 100 famílias por ciclo e 50 por grupo (serviço).
+  Crédito mensal em centésimos de crédito.
+end note
+note bottom of checkouts
+  UNIQUE(enrollment_id, month)
+  UNIQUE(request_key): idempotência
+  BEGIN IMMEDIATE: débito e estoque atômicos.
+end note
+note bottom of prices
+  UNIQUE(product_id, effective_date)
+  Preços históricos preservados nos itens.
+end note
+legend bottom
+  PK = chave primária | FK = chave estrangeira | nullable = opcional
+  Valores em INTEGER: créditos em centésimos; doações em centavos de real.
+  Quantidades inteiras por embalagem. Datas ISO 8601. Auditoria em UTC.
+  lots.remaining = soma dos movimentos. Lotes vencidos bloqueados.
+endlegend
+@enduml

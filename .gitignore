@@ -1,0 +1,12 @@
+/target
+/data
+/.env
+/.env.*
+!/.env.example
+/backups
+/docs/IMPLANTACAO.md
+ACESSO-INICIAL.txt
+access-initial.txt
+*.db
+*.db-shm
+*.db-wal
