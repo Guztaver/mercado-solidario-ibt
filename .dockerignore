@@ -1,6 +1,7 @@
 target
 data
 .env
+secrets
 .git
 *.zip
 *.db*

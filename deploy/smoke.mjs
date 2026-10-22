@@ -24,6 +24,16 @@ try {
   for (let i=0;i<120;i++) {try {const r=await fetch(base+'/healthz');if(r.ok)break;}catch{} await new Promise(r=>setTimeout(r,250));if(child.exitCode!==null)throw Error(logs);}
   check((await req('/')).location === '/login', 'Anonymous dashboard redirects to login');
   let r = await req('/login'); const nonce=r.html.match(/name="csrf"[^>]*value="([^"]+)"/)[1];
+  const loginCookie = cookies.get('ms_login');
+  const icon = await req('/favicon.ico');
+  check(icon.status === 200 && icon.headers.get('content-type').includes('image/svg+xml') && !icon.location, 'Browser favicon request never redirects to login');
+  check(cookies.get('ms_login') === loginCookie, 'Favicon does not overwrite the login nonce');
+  r = await req('/missing-asset.txt');
+  check(r.status === 404 && !r.location && cookies.get('ms_login') === loginCookie, 'Missing assets do not redirect or reset login state');
+  r = await req('/login');
+  check(r.html.match(/name="csrf"[^>]*value="([^"]+)"/)[1] === nonce, 'Opening a second login tab preserves the first form');
+  r = await req('/login', {csrf:'invalid-token', email:'admin@ibt.test', password:'SomenteTesteLocal123!'});
+  check(r.status === 403 && r.html.includes('name="password"') && r.html.includes('name="csrf"'), 'Invalid login CSRF is rejected with a usable recovery form');
   check((await req('/login',{csrf:nonce,email:'admin@ibt.test',password:'SomenteTesteLocal123!'})).location==='/', 'Login sets a session');
   r=await req('/');check(r.status===200&&r.html.includes('Visão geral'), 'SSR dashboard renders');
   const csrf=r.html.match(/name="csrf"[^>]*value="([^"]+)"/)[1];

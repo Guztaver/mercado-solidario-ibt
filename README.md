@@ -38,7 +38,7 @@ cargo run
 
 Abra `http://127.0.0.1:3100`. O banco será criado em `data/mercado.db`. As variáveis de administrador só são usadas quando ainda não existe usuário no banco. Não existe senha padrão embutida.
 
-Use um navegador externo para entrar. Caso um navegador embutido retorne “Sessão do formulário expirada”, abra o mesmo endereço no Chrome, Edge ou Firefox.
+Se o formulário ficar aberto por mais de dez minutos e a sessão expirar, a própria tela de entrada apresenta um novo formulário para tentar novamente. Pedidos do ícone do site e outras páginas de login não invalidam o formulário atual.
 
 ## Deploy com Docker e Cloudflare
 
@@ -58,7 +58,7 @@ cargo test --locked
 cargo fmt --check
 ```
 
-Para repetir as 30 verificações HTTP em um banco separado, faça `cargo build --locked` e `node deploy/smoke.mjs` com Node.js 22 ou superior. Os dados de teste ficam em `target/smoke-*`; o script não acessa o banco de produção.
+Para repetir as 35 verificações HTTP em um banco separado, faça `cargo build --locked` e `node deploy/smoke.mjs` com Node.js 22 ou superior. Os dados de teste ficam em `target/smoke-*`; o script não acessa o banco de produção. Há regressões para o carregamento do favicon, abas de login simultâneas e recuperação de formulário expirado.
 
 Os testes exercitam FEFO, bloqueio de vencidos, retirada duplicada, idempotência, falhas com rollback, saldo insuficiente, concorrência entre conexões SQLite, alternância, preço vigente, autorização e escape de HTML. O Dockerfile exige a aprovação dos testes antes de gerar a imagem final.
 

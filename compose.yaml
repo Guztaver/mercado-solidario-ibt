@@ -1,6 +1,6 @@
 services:
   app:
-    image: mercado-solidario:1.0.0
+    image: mercado-solidario:1.0.1
     build: .
     container_name: mercado-solidario
     restart: unless-stopped

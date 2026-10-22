@@ -45,10 +45,10 @@ fn now() -> i64 {
     chrono::Utc::now().timestamp()
 }
 fn cookie(h: &HeaderMap, name: &str) -> Option<String> {
-    h.get(header::COOKIE)?
-        .to_str()
-        .ok()?
-        .split(';')
+    h.get_all(header::COOKIE)
+        .iter()
+        .filter_map(|value| value.to_str().ok())
+        .flat_map(|value| value.split(';'))
         .find_map(|s| {
             s.trim()
                 .strip_prefix(&format!("{name}="))
@@ -117,11 +117,27 @@ async fn page(
     path: Option<Path<String>>,
 ) -> Response {
     blocking(move || {
+        let page = path.map(|p| p.0).unwrap_or_else(|| "painel".into());
+        if ![
+            "painel",
+            "familias",
+            "estoque",
+            "doacoes",
+            "atendimento",
+            "relatorios",
+            "ciclos",
+            "configuracoes",
+            "historico",
+            "recibo",
+        ]
+        .contains(&page.as_str())
+        {
+            return (StatusCode::NOT_FOUND, "Página não encontrada.").into_response();
+        }
         let c = app.db.lock().unwrap();
         let Some(u) = user(&c, &headers) else {
             return Redirect::to("/login").into_response();
         };
-        let page = path.map(|p| p.0).unwrap_or_else(|| "painel".into());
         match ui::render(&c, &u, &page, &q) {
             Ok(html) => Html(html).into_response(),
             Err(e) => {
@@ -132,16 +148,32 @@ async fn page(
     })
     .await
 }
-async fn login_page(State(app): State<App>) -> Response {
-    let nonce = random();
-    let mut response = Html(ui::login(&nonce, None)).into_response();
-    set_cookie(&mut response, "ms_login", &nonce, 600, app.secure);
+fn login_form(
+    secure: bool,
+    headers: &HeaderMap,
+    error: Option<&str>,
+    status: StatusCode,
+) -> Response {
+    let nonce = cookie(headers, "ms_login")
+        .filter(|v| v.len() == 64 && v.bytes().all(|b| b.is_ascii_hexdigit()))
+        .unwrap_or_else(random);
+    let mut response = (status, Html(ui::login(&nonce, error))).into_response();
+    set_cookie(&mut response, "ms_login", &nonce, 600, secure);
     response
+}
+async fn login_page(State(app): State<App>, headers: HeaderMap) -> Response {
+    login_form(app.secure, &headers, None, StatusCode::OK)
+}
+async fn favicon() -> impl IntoResponse {
+    (
+        [(header::CONTENT_TYPE, "image/svg+xml")],
+        include_str!("../static/favicon.svg"),
+    )
 }
 async fn login(State(app): State<App>, headers: HeaderMap, Form(f): Form<db::Form>) -> Response {
     blocking(move||{
         let nonce=f.get("csrf").cloned().unwrap_or_default();
-        if nonce.len()!=64 || cookie(&headers,"ms_login").as_deref()!=Some(&nonce){return (StatusCode::FORBIDDEN,"Sessão do formulário expirada. Reabra /login.").into_response();}
+        if nonce.len()!=64 || cookie(&headers,"ms_login").as_deref()!=Some(&nonce){return login_form(app.secure,&headers,Some("A sessão do formulário expirou. Digite seus dados novamente para entrar."),StatusCode::FORBIDDEN);}
         let email=f.get("email").map(|s|s.trim().to_lowercase()).unwrap_or_default();
         let password=f.get("password").cloned().unwrap_or_default();
         if email.len()>180 || password.len()>200{return (StatusCode::BAD_REQUEST,"Dados inválidos.").into_response();}
@@ -323,6 +355,8 @@ async fn main() {
         .route("/login", get(login_page).post(login))
         .route("/acoes/{action}", post(action))
         .route("/exportar", get(export))
+        .route("/favicon.ico", get(favicon))
+        .route("/assets/favicon.svg", get(favicon))
         .route(
             "/assets/app.css",
             get(|| async {
