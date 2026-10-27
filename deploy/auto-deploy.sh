@@ -32,6 +32,7 @@ APP_IMAGE="$target_image" docker compose --project-name mercado-solidario build 
 
 backup_tmp="/data/backups/autodeploy-latest.new.db"
 backup_final="/data/backups/autodeploy-latest.db"
+docker exec mercado-solidario rm -f "$backup_tmp"
 docker exec mercado-solidario mercado-solidario backup "$backup_tmp"
 docker exec mercado-solidario mv -f "$backup_tmp" "$backup_final"
 
@@ -63,4 +64,9 @@ fi
 
 printf '%s\n' "$target" > "$DEPLOYED_FILE.new"
 mv -f "$DEPLOYED_FILE.new" "$DEPLOYED_FILE"
+while IFS= read -r image; do
+    if [[ "$image" != "$target_image" && "$image" != "$previous_image" ]]; then
+        docker image rm "$image" >/dev/null 2>&1 || true
+    fi
+done < <(docker image ls --format '{{.Repository}}:{{.Tag}}' | grep -E '^mercado-solidario:[0-9a-f]{40}$' || true)
 echo "$LOG_PREFIX deployed $target_image"
