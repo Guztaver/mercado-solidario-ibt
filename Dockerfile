@@ -4,7 +4,8 @@ COPY Cargo.toml Cargo.lock ./
 COPY src ./src
 COPY static ./static
 ENV CARGO_BUILD_JOBS=2
-RUN --mount=type=cache,target=/usr/local/cargo/registry --mount=type=cache,target=/app/target touch src/* static/* && cargo build --release --locked && cargo test --release --locked && cp /app/target/release/mercado-solidario /app/mercado-solidario
+ARG RUN_TESTS=true
+RUN --mount=type=cache,target=/usr/local/cargo/registry --mount=type=cache,target=/app/target touch src/* static/* && cargo build --release --locked && if [ "$RUN_TESTS" = "true" ]; then cargo test --release --locked; fi && cp /app/target/release/mercado-solidario /app/mercado-solidario
 
 FROM debian:bookworm-slim
 RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates curl && rm -rf /var/lib/apt/lists/* && useradd --uid 10001 --create-home app && mkdir -p /data && chown app:app /data

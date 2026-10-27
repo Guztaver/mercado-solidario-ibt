@@ -4,3 +4,72 @@
 @media(max-width:900px){.app-shell{grid-template-columns:1fr}.sidebar{position:static;height:auto;padding:18px 20px 0;overflow:visible;border-bottom:1px solid var(--line)}.brand{font-size:16px;width:max-content}.brand-symbol{font-size:39px}.brand small{font-size:7px;margin-top:6px}.sidebar-caption,.sidebar-bottom{display:none}.sidebar nav{display:flex;flex-direction:row;overflow-x:auto;margin-top:18px;gap:5px;padding-bottom:12px}.nav-link{white-space:nowrap;font-size:10px;padding:9px 11px;gap:7px}.nav-icon{font-size:16px;width:17px}.active-dot{display:none}.topbar{height:53px}.topbar-right .date-label{display:none}.page-heading h1{font-size:25px}.welcome-banner h2{font-size:26px}.stat-card p{font-size:9px}.login-story{padding:42px}.login-panel{padding:35px}.login-seal{font-size:220px}.sidebar nav:after{content:"";padding:1px}}
 @media(max-width:620px){main{padding:25px 17px 0}.topbar{padding:0 18px}.breadcrumb{font-size:9px}.topbar-right{font-size:8px}.breadcrumb span{margin:0 5px}.page-heading{align-items:flex-start;flex-direction:column;gap:14px;margin-bottom:22px}.page-heading>.button{font-size:10px;min-height:35px;padding:8px 12px}.page-heading .eyebrow{font-size:7px;letter-spacing:1.1px}.page-heading h1{font-size:24px;margin-top:9px}.page-heading p{font-size:10px}.welcome-banner{padding:24px;min-height:247px}.welcome-banner h2{font-size:24px;position:relative;z-index:2}.welcome-banner p{font-size:9px;max-width:210px;position:relative;z-index:2;line-height:1.8}.welcome-banner .eyebrow{font-size:7px;letter-spacing:1px}.welcome-banner .button{position:relative;z-index:3}.banner-art{position:absolute;right:-100px;bottom:-27px;opacity:.3;min-width:230px;height:210px}.art-tag{display:none}.stat-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.stat-card{padding:14px}.stat-number{font-size:28px}.stat-top>span:first-child{font-size:7px;letter-spacing:.3px}.stat-card p{font-size:8px;min-height:25px}.stat-icon{font-size:15px;width:23px;height:23px}.panel-head{padding:19px 17px 17px;align-items:flex-start}.panel-head h2{font-size:13px}.panel-head p{font-size:9px}.panel-head>.text-link{font-size:9px;margin-top:3px}table th{padding:11px 17px;font-size:9px}table td{padding:13px 17px;font-size:10px}.community-note{padding:17px;gap:10px;flex-wrap:wrap}.community-note p{line-height:1.7;max-width:230px}.community-note>a{margin-left:43px}.community-note strong{font-size:10px}.form-grid{grid-template-columns:1fr;padding:0 17px 20px;gap:18px}.form-footer{flex-direction:column;align-items:flex-start;gap:10px}.form-footer .button{width:100%}.disclosure>summary{padding:20px 17px;font-size:12px}.table-tools{padding:0 17px 16px;align-items:flex-start;flex-direction:column}.table-tools label{width:100%;flex-direction:column;align-items:flex-start}.table-tools input{width:100%}.steps{gap:8px;justify-content:space-between}.steps>span{font-size:8px;line-height:1.7}.steps b{width:20px;height:20px;font-size:8px;margin-right:3px}.checkout-family{padding:0 17px 20px}.checkout-total{padding:20px 17px;flex-direction:column;align-items:stretch}.checkout-total .button{width:100%}.checkout-total strong{font-size:22px}.info-strip{padding:15px;gap:12px}.info-strip p{font-size:10px}.report-controls{flex-direction:column;align-items:stretch}.report-controls form{justify-content:space-between}.report-controls .field{flex:1}.report-stats{grid-template-columns:1fr}.report-stats .stat-number{font-size:26px}.report-stats .stat-card p{min-height:0}.report-stats .stat-card{padding:20px}.report-stats .stat-number{margin:12px 0 8px}footer{font-size:8px;padding:18px 0;gap:12px}footer>span{text-align:right;font-size:8px;max-width:150px;line-height:1.7}.login-layout{grid-template-columns:1fr}.login-story{padding:27px 28px;gap:24px}.login-story h1{font-size:34px;letter-spacing:-1px;line-height:1.1;margin:15px 0}.login-story h1 br{display:none}.login-story h1 br:after{content:" "}.login-story h1 em{display:block}.login-story p,.login-story>small,.login-seal{display:none}.login-story .eyebrow{font-size:7px}.login-panel{padding:32px 28px 45px;place-items:start center}.login-card h2{font-size:23px}.login-card form{margin-top:25px}.login-card .notice{margin-top:20px}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}@media print{.sidebar,.topbar,.page-heading>.button,footer,button,.skip{display:none!important}.app-shell{display:block}main{padding:0}.panel{break-inside:avoid}.disclosure>.details-content{display:block!important}.disclosure>summary{display:none}body{background:white}table th,table td{font-size:10px;padding:8px}.page-heading{margin-top:15px}.panel-head p{color:#666}.table-wrap{overflow:visible}}
+
+/* Ajustes de navegação e conteúdo para celulares estreitos. */
+@media screen and (max-width:900px){
+  .app-shell,.workspace,main{width:100%;min-width:0}
+  .sidebar{padding:16px 0 0}
+  .sidebar>.brand{padding:0 18px}
+  .sidebar nav{scrollbar-width:thin;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;padding:2px 14px 12px}
+  .nav-link{min-height:44px}
+  .table-wrap{max-width:100%;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
+}
+@media screen and (max-width:620px){
+  html,body{width:100%;min-width:320px}
+  body{font-size:15px}
+  .topbar{height:auto;min-height:54px;padding:10px 15px;flex-wrap:wrap;row-gap:5px}
+  .breadcrumb{min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .topbar-right{margin-left:auto}
+  main{padding:20px 14px 0}
+  .page-heading{gap:12px}
+  .page-heading>div{min-width:0}
+  .page-heading h1{font-size:clamp(22px,7vw,26px);overflow-wrap:anywhere}
+  .page-heading>.button{min-height:44px;width:100%;white-space:normal}
+  .welcome-banner{min-height:0;padding:22px 19px 25px}
+  .welcome-banner>div:first-child{max-width:100%}
+  .welcome-banner h2{font-size:clamp(21px,7vw,25px);overflow-wrap:anywhere}
+  .banner-art{right:-130px;bottom:-48px;opacity:.2;pointer-events:none}
+  .stat-grid:not(.report-stats){grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+  .report-stats{grid-template-columns:minmax(0,1fr)}
+  .stat-card{min-width:0;padding:13px 12px}
+  .stat-number{font-size:clamp(21px,7vw,27px);overflow-wrap:anywhere}
+  .stat-top>span:first-child,.eyebrow{overflow-wrap:anywhere}
+  .panel-head{flex-wrap:wrap;align-items:flex-start;min-width:0;padding:17px 15px}
+  .panel-head>div{min-width:0;max-width:100%}
+  .panel-head>.text-link{white-space:normal;max-width:100%}
+  .table-wrap table{min-width:600px}
+  .form-grid{grid-template-columns:minmax(0,1fr);padding:0 15px 19px}
+  .field{min-width:0}
+  .field input,.field select,.field textarea,.table-tools input,.qty{font-size:16px;min-height:44px}
+  .form-footer{width:100%}
+  .form-footer .button{min-height:46px}
+  .steps{display:grid;grid-template-columns:1fr;gap:8px}
+  .steps>span{display:flex;align-items:center;font-size:10px}
+  .checkout-total{align-items:stretch}
+  .checkout-total>div{min-width:0}
+  .checkout-total .button,.report-controls>.button{width:100%;min-height:46px;white-space:normal}
+  .report-controls form{width:100%;flex-wrap:wrap;align-items:stretch}
+  .report-controls form .field{flex:1 1 150px;min-width:0}
+  .report-controls form input{width:100%;min-width:0;font-size:16px;min-height:44px}
+  .report-controls form .button{flex:1 1 100%;min-height:44px}
+  .report-controls>.button{display:flex;align-items:center;justify-content:center}
+  .info-strip{align-items:flex-start}
+  .community-note{align-items:flex-start}
+  .community-note>a{margin-left:0}
+  footer{align-items:flex-start;flex-direction:column;gap:7px}
+  footer>span{text-align:left;max-width:none}
+  .login-layout{min-height:100svh}
+  .login-story{padding:22px 20px;gap:18px}
+  .login-story h1{font-size:clamp(29px,9vw,36px)}
+  .login-panel{padding:28px 20px 36px}
+  .login-card{max-width:440px}
+  .login-card form{gap:18px}
+  .login-card form .button{min-height:48px}
+}
+@media screen and (max-width:360px){
+  main{padding-right:12px;padding-left:12px}
+  .stat-grid{grid-template-columns:minmax(0,1fr)}
+  .stat-card{padding:15px}
+  .topbar{padding-right:12px;padding-left:12px}
+  .sidebar>.brand{padding-right:14px;padding-left:14px}
+}

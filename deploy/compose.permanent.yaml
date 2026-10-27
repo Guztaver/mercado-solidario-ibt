@@ -1,0 +1,9 @@
+# Apply from the project root with:
+# docker compose -f compose.yaml -f deploy/compose.permanent.yaml up -d tunnel
+# Remotely-managed Cloudflare Tunnel. No account certificate is required.
+# Configure ibt.gustavoanjos.com -> http://app:3100 in the Cloudflare dashboard.
+services:
+  tunnel:
+    command: ["tunnel", "--no-autoupdate", "run"]
+    env_file:
+      - ./secrets/cloudflare-tunnel.env

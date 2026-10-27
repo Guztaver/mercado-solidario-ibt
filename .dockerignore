@@ -2,6 +2,7 @@ target
 data
 .env
 secrets
+compose.override.yaml
 .git
 *.zip
 *.db*

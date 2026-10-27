@@ -5,6 +5,7 @@
 !/.env.example
 /backups
 /secrets
+/compose.override.yaml
 /docs/IMPLANTACAO.md
 ACESSO-INICIAL.txt
 access-initial.txt
