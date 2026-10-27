@@ -49,7 +49,13 @@ Se o formulário ficar aberto por mais de dez minutos e a sessão expirar, a pr�
 
 A aplicação expõe apenas `127.0.0.1:13100` no host. O túnel acessa a aplicação pela rede interna do Compose. O SQLite persiste no volume `mercado_data`; os contêineres executam sem privilégios, com limites de memória e logs rotacionados.
 
-O Compose fornecido usa um **Quick Tunnel**. O endereço `trycloudflare.com` é temporário e pode mudar se o túnel for recriado. Para domínio estável, configure um túnel nomeado da sua conta Cloudflare conforme [deploy/CLOUDFLARE.md](deploy/CLOUDFLARE.md).
+### Atualizações automáticas no servidor
+
+No servidor institucional configurado para este projeto, o serviço `deploy/auto-deploy.sh` consulta a branch pública `main` a cada dois minutos. Quando encontra um commit novo, cria a imagem com uma etiqueta exclusiva do commit, salva um backup consistente do SQLite, atualiza somente o contêiner da aplicação e espera a verificação de saúde. Se a versão nova não ficar saudável, restaura a imagem anterior. O túnel Cloudflare e o volume do banco permanecem os mesmos.
+
+O mecanismo roda no próprio servidor e não exige token de deploy do GitHub. O repositório precisa permanecer público para que o servidor possa consultá-lo sem credenciais. Para instalações novas, conecte os arquivos privados de execução (`.env`, `secrets/` e `compose.override.yaml`) antes de instalar o agendamento.
+
+Por padrão, `compose.yaml` usa um **Quick Tunnel**, cujo endereço `trycloudflare.com` pode mudar quando o túnel é recriado. Para domínio estável, use o modelo de túnel nomeado em [deploy/compose.permanent.yaml](deploy/compose.permanent.yaml) e siga [deploy/CLOUDFLARE.md](deploy/CLOUDFLARE.md). O servidor deste projeto já usa um túnel nomeado para `ibt.gustavoanjos.com`.
 
 ## Verificações
 

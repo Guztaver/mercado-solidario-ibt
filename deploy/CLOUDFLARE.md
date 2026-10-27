@@ -1,22 +1,26 @@
-# Endereço Cloudflare
+# Túnel Cloudflare permanente
 
-O deploy inicial usa um Quick Tunnel, que fornece HTTPS sem exigir domínio ou token da sua conta. Esse endereço pode mudar após recriar o serviço e deve ser usado para apresentação e homologação.
+O Compose padrão usa um Quick Tunnel para instalações locais e demonstrações. O endereço `trycloudflare.com` pode mudar quando o túnel é recriado.
 
-Para um endereço estável de uso institucional:
+Para configurar um domínio próprio:
 
-1. Na sua conta Cloudflare, crie um túnel nomeado para este projeto.
-2. Configure o hostname escolhido com destino HTTP `http://app:3100`.
-3. Coloque o token do túnel em `.env` como `TUNNEL_TOKEN=...` sem incluir o arquivo no repositório.
-4. No serviço `tunnel` do Compose, substitua o `command` por `tunnel --no-autoupdate run` e acrescente:
+1. Crie um túnel remoto em Cloudflare Zero Trust → **Networks → Tunnels** e selecione Docker.
+2. Adicione um **Public Hostname** para o domínio escolhido, com serviço HTTP `app:3100`. Isso cria a rota pública e o registro DNS.
+3. Salve o token do túnel em `secrets/cloudflare-tunnel.env`, sem o adicionar ao Git:
 
-```yaml
-    environment:
-      TUNNEL_TOKEN: ${TUNNEL_TOKEN}
-```
+   ```dotenv
+   TUNNEL_TOKEN=cole-o-token-localmente
+   ```
 
-5. Recrie apenas o túnel: `docker compose up -d tunnel`.
-6. Teste login, `/healthz` e atendimento pelo hostname escolhido.
+4. Restrinja o arquivo a `600` e a pasta `secrets/` a `700`.
+5. Ative a configuração nomeada:
 
-Preserve `COOKIE_SECURE=true` no acesso HTTPS. Não publique a porta 13100 em todas as interfaces. Não é necessário compartilhar o token no chat.
+   ```sh
+   docker compose -f compose.yaml -f deploy/compose.permanent.yaml up -d tunnel
+   ```
+
+6. Verifique `https://seu-dominio/healthz` e a tela de entrada.
+
+No servidor institucional, `compose.override.yaml` já mantém o túnel nomeado ativo quando o Compose é executado sem opções adicionais. Preserve `COOKIE_SECURE=true`, não exponha a porta 13100 publicamente e nunca compartilhe o token em chats ou no repositório.
 
 Documentação: https://developers.cloudflare.com/tunnel/get-started/
