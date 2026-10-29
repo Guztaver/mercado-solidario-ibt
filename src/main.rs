@@ -129,6 +129,7 @@ async fn page(
             "configuracoes",
             "historico",
             "recibo",
+            "cartao",
         ]
         .contains(&page.as_str())
         {

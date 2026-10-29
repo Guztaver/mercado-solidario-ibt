@@ -209,10 +209,17 @@ fn all_pages_render_against_real_schema() {
         "configuracoes",
         "historico",
         "recibo",
+        "cartao",
     ] {
         let html = ui::render(&c, &u, page, &HashMap::new()).unwrap();
         assert!(html.contains("<!DOCTYPE html>"), "{page}");
     }
+    let family = HashMap::from([("family".to_string(), "1".to_string())]);
+    let card = ui::render(&c, &u, "cartao", &family).unwrap();
+    assert!(card.contains("class=\"family-card\""));
+    assert!(card.contains("IBT-001") && card.contains("Família Teste"));
+    let families = ui::render(&c, &u, "familias", &HashMap::new()).unwrap();
+    assert!(families.contains("/cartao?family=1"));
 }
 #[test]
 fn two_connections_cannot_duplicate_a_withdrawal() {

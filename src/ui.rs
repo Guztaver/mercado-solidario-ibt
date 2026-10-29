@@ -120,6 +120,10 @@ fn title(page: &str) -> (&'static str, &'static str) {
             "Comprovante de entrega",
             "Rastreabilidade de cada produto entregue.",
         ),
+        "cartao" => (
+            "Cartão da família",
+            "Identificação para facilitar o atendimento.",
+        ),
         _ => (
             "Visão geral",
             "Bem-vindo ao Mercado Solidário. Vamos cuidar de quem precisa.",
@@ -173,6 +177,7 @@ pub fn render(c: &Connection, u: &User, page: &str, q: &HashMap<String, String>)
         "configuracoes" => settings(c, u)?,
         "historico" => history(c, q)?,
         "recibo" => receipt(c, q)?,
+        "cartao" => family_card(c, q)?,
         _ => av(
             view! {<div class="empty"><h2>"Página não encontrada"</h2><a href="/">"Voltar ao painel"</a></div>},
         ),
@@ -267,10 +272,10 @@ fn families(c: &Connection, u: &User) -> R<AnyView> {
     )?;
     let month = db::today().format("%Y-%m").to_string();
     let view = av(
-        view! {<div class="table-tools"><label>"Buscar família"<input type="search" data-table-search placeholder="Nome ou referência…" aria-label="Buscar família"/></label><span>{format!("{} inscrições na lista",rows.len())}</span></div><div class="table-wrap"><table data-searchable><thead><tr><th>"Referência"</th><th>"Família"</th><th>"Ciclo / grupo"</th><th>"Crédito mensal"</th><th>"Saldo do mês"</th><th>"Situação"</th><th>"Histórico"</th></tr></thead><tbody>{rows.into_iter().map(|r|{
+        view! {<div class="table-tools"><label>"Buscar família"<input type="search" data-table-search placeholder="Nome ou referência…" aria-label="Buscar família"/></label><span>{format!("{} inscrições na lista",rows.len())}</span></div><div class="table-wrap"><table data-searchable><thead><tr><th>"Referência"</th><th>"Família"</th><th>"Ciclo / grupo"</th><th>"Crédito mensal"</th><th>"Saldo do mês"</th><th>"Situação"</th><th>"Histórico"</th><th>"Cartão"</th></tr></thead><tbody>{rows.into_iter().map(|r|{
             let eligible=r[9]=="1"&&db::eligible(&r[8],&r[6],&month);let used=r[10].parse::<i64>().unwrap_or(0);let credit=r[7].parse::<i64>().unwrap_or(0);
             let status=if r[9]!="1"{"Inativa"}else if !eligible{"Fora da vez"}else if used>0{"Atendida"}else{"Pode retirar"};
-            view!{<tr><td><span class="reference">{r[1].clone()}</span></td><td><strong>{r[2].clone()}</strong><small class="cell-sub">{format!("{} integrantes",r[3])}</small></td><td>{format!("{} · {}",r[4],r[6])}</td><td>{db::display_money(credit)}</td><td>{if eligible{db::display_money(credit-used)}else{"—".into()}}</td><td><span class=if eligible&&used==0{"badge green"}else{"badge"}>{status}</span></td><td><a class="text-link" href=format!("/historico?family={}",r[0])>"Consultar ↗"</a></td></tr>}
+            view!{<tr><td><span class="reference">{r[1].clone()}</span></td><td><strong>{r[2].clone()}</strong><small class="cell-sub">{format!("{} integrantes",r[3])}</small></td><td>{format!("{} · {}",r[4],r[6])}</td><td>{db::display_money(credit)}</td><td>{if eligible{db::display_money(credit-used)}else{"—".into()}}</td><td><span class=if eligible&&used==0{"badge green"}else{"badge"}>{status}</span></td><td><a class="text-link" href=format!("/historico?family={}",r[0])>"Consultar ↗"</a></td><td><a class="text-link" href=format!("/cartao?family={}",r[0])>"Imprimir ↗"</a></td></tr>}
         }).collect_view()}</tbody></table></div>},
     );
     let new = form(
@@ -563,6 +568,38 @@ fn history(c: &Connection, q: &HashMap<String, String>) -> R<AnyView> {
     Ok(av(
         view! {{panel("Cadastro da família","Dados de referência da família.",table(vec!["Referência","Responsável","Integrantes"],family))}{panel("Histórico de consumo","Entregas de todos os ciclos, com o preço praticado na data do atendimento.",table(vec!["Ciclo","Grupo","Entrega","Mês","Produto","Quantidade","Créditos / un.","Total"],formatted(rows,&[6,7])))}<a class="text-link" href="/familias">"← Voltar às famílias"</a>},
     ))
+}
+fn family_card(c: &Connection, q: &HashMap<String, String>) -> R<AnyView> {
+    let id = q
+        .get("family")
+        .and_then(|value| value.parse::<i64>().ok())
+        .unwrap_or(0);
+    let rows = db::rows(
+        c,
+        "SELECT f.reference,f.name,f.members,COALESCE(cy.name,'Sem ciclo'),COALESCE(e.group_code,'—') FROM families f LEFT JOIN enrollments e ON e.family_id=f.id LEFT JOIN cycles cy ON cy.id=e.cycle_id WHERE f.id=?1 ORDER BY cy.start_month DESC LIMIT 1",
+        &[&id],
+    )?;
+    let Some(row) = rows.first() else {
+        return Ok(av(view! {
+            <section class="panel"><div class="empty"><h2>"Família não encontrada"</h2><p>"Confira a referência e tente novamente."</p><a class="text-link" href="/familias">"Voltar às famílias ↗"</a></div></section>
+        }));
+    };
+    let reference = row[0].clone();
+    let name = row[1].clone();
+    let members = row[2].clone();
+    let cycle = row[3].clone();
+    let group = row[4].clone();
+    Ok(av(view! {
+        <div class="family-card-document">
+            <div class="family-card-toolbar"><a class="button button-light" href="/familias">"← Voltar às famílias"</a><button class="button" type="button" data-print>"Imprimir cartão"</button></div>
+            <article class="family-card" aria-label="Cartão de identificação da família">
+                <header class="family-card-header"><span class="family-card-mark" aria-hidden="true">"✳"</span><span><strong>"Mercado Solidário"</strong><small>"IBT · ITABUNA"</small></span><span class="family-card-label">"CARTÃO DA FAMÍLIA"</span></header>
+                <div class="family-card-main"><span class="family-card-caption">"RESPONSÁVEL FAMILIAR"</span><h2>{name}</h2><div class="family-card-reference-label">"REFERÊNCIA"</div><strong class="family-card-reference">{reference}</strong></div>
+                <footer class="family-card-footer"><span><small>"INTEGRANTES"</small><strong>{members}</strong></span><span><small>"CICLO"</small><strong>{cycle}</strong></span><span><small>"GRUPO"</small><strong>{group}</strong></span></footer>
+            </article>
+            <p class="family-card-note">"Apresente este cartão à equipe para localizar o cadastro. Ele não substitui a confirmação dos dados no sistema."</p>
+        </div>
+    }))
 }
 fn receipt(c: &Connection, q: &HashMap<String, String>) -> R<AnyView> {
     let id = q.get("id").and_then(|s| s.parse::<i64>().ok()).unwrap_or(0);

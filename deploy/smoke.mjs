@@ -57,7 +57,7 @@ try {
   r=await req('/recibo?id=1');check(r.status===200&&r.html.includes('20,50')&&r.html.includes('QA-ARROZ'), 'Receipt preserves total and lot traceability');
   r=await req('/acoes/checkout',{csrf,enrollment_id:'1',request_key:'another-request',qty_1:'1'});check(r.location.includes('?erro='), 'Second monthly withdrawal blocked');
   r=await req('/exportar?month='+month);check(r.status===200&&r.html.includes('QA-001')&&r.html.includes('1000')&&r.html.includes('1050'), 'Monthly CSV includes both checkout lines');
-  for (const path of ['familias','estoque','doacoes','atendimento','relatorios','ciclos','configuracoes','historico?family=1']) {r=await req('/'+path);check(r.status===200,'Page renders: '+path);}
+  for (const path of ['familias','estoque','doacoes','atendimento','relatorios','ciclos','configuracoes','historico?family=1','cartao?family=1']) {r=await req('/'+path);check(r.status===200,'Page renders: '+path);if(path.startsWith('cartao'))check(r.html.includes('class="family-card"')&&r.html.includes('QA-001')&&r.html.includes('Imprimir cartão'),'Family card renders printable identity');}
   await save('user',{name:'Voluntário QA',email:'voluntario@ibt.test',password:'VoluntarioTeste123!',role:'volunteer'});
   check((await req('/acoes/logout',{csrf})).location==='/login', 'Logout redirects to login');
   check((await req('/familias')).location==='/login', 'Logout revokes session');

@@ -75,3 +75,39 @@
   .sidebar>.brand{padding-right:14px;padding-left:14px}
 }
 .checkout-family .field+.field{margin-top:14px}
+
+.family-card-document{max-width:680px;margin:0 auto 28px}
+.family-card-toolbar{display:flex;justify-content:space-between;gap:12px;margin-bottom:18px}
+.family-card{position:relative;display:flex;flex-direction:column;justify-content:space-between;isolation:isolate;overflow:hidden;min-height:300px;padding:25px 29px;border:1px solid #d7e4d5;border-radius:18px;background:linear-gradient(130deg,#f2f7e9 0%,#e5f0e2 55%,#d4e6d7 100%);box-shadow:0 16px 38px #304b3418;color:#294f3c}
+.family-card:after{position:absolute;z-index:-1;content:"✳";right:-28px;bottom:-104px;color:#a8c29c55;font:280px/1 Georgia,serif;transform:rotate(-15deg)}
+.family-card-header{display:flex;align-items:center;gap:10px}
+.family-card-mark{display:grid;place-items:center;width:39px;height:39px;border-radius:12px;background:#277456;color:#fff;font-size:25px}
+.family-card-header>span:nth-child(2){display:grid;gap:3px}
+.family-card-header strong{font-size:14px;letter-spacing:-.2px}
+.family-card-header small{font-size:8px;letter-spacing:2px;color:#718b74}
+.family-card-label{margin-left:auto;color:#718b74;font-size:8px;font-weight:700;letter-spacing:1.1px}
+.family-card-main{margin:27px 0 21px}
+.family-card-caption,.family-card-reference-label{display:block;color:#718b74;font-size:8px;font-weight:700;letter-spacing:1.2px}
+.family-card-main h2{margin:6px 0 15px;font-size:clamp(21px,5vw,29px);font-weight:650;letter-spacing:-.7px;overflow-wrap:anywhere}
+.family-card-reference{display:block;margin-top:3px;font-size:22px;letter-spacing:2px}
+.family-card-footer{display:flex;gap:12px;margin:0;padding-top:14px;border-top:1px solid #abc3ad;color:inherit;font-size:inherit}
+.family-card-footer>span{display:grid;gap:5px;min-width:0;flex:1}
+.family-card-footer small{color:#718b74;font-size:7px;font-weight:700;letter-spacing:1px}
+.family-card-footer strong{font-size:10px;overflow-wrap:anywhere}
+.family-card-note{margin-top:13px;color:#84928a;font-size:10px;line-height:1.7}
+@media screen and (max-width:620px){.family-card{min-height:270px;padding:20px;border-radius:15px}.family-card-header strong{font-size:12px}.family-card-label{font-size:7px}.family-card-footer{gap:7px}.family-card-footer small{font-size:6px}.family-card-footer strong{font-size:9px}}
+@media print{
+  @page{size:A4 portrait;margin:18mm}
+  body:has(.family-card-document) .skip,body:has(.family-card-document) .sidebar,body:has(.family-card-document) .topbar,body:has(.family-card-document) .page-heading,body:has(.family-card-document) footer:not(.family-card-footer),body:has(.family-card-document) .family-card-toolbar,body:has(.family-card-document) .family-card-note{display:none!important}
+  body:has(.family-card-document) .app-shell,body:has(.family-card-document) .workspace,body:has(.family-card-document) main{display:block;width:auto;max-width:none;min-height:0;margin:0;padding:0;overflow:visible}
+  .family-card-document{max-width:none;margin:0}
+  .family-card{width:85.6mm;height:54mm;min-height:54mm;padding:5mm;border-radius:3mm;box-shadow:none;print-color-adjust:exact;-webkit-print-color-adjust:exact;break-inside:avoid}
+  .family-card-mark{width:8mm;height:8mm;border-radius:2mm}
+  .family-card-header strong{font-size:9pt}
+  .family-card-header small{font-size:5pt}
+  .family-card-label,.family-card-caption,.family-card-reference-label,.family-card-footer small{font-size:5pt}
+  .family-card-main{margin:3mm 0}
+  .family-card-main h2{font-size:15pt}
+  .family-card-reference{font-size:12pt}
+  .family-card-footer strong{font-size:7pt}
+}
