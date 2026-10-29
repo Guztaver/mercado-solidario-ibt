@@ -220,6 +220,11 @@ fn all_pages_render_against_real_schema() {
     assert!(card.contains("IBT-001") && card.contains("Família Teste"));
     let families = ui::render(&c, &u, "familias", &HashMap::new()).unwrap();
     assert!(families.contains("/cartao?family=1"));
+    let checkout = ui::render(&c, &u, "atendimento", &HashMap::new()).unwrap();
+    assert!(
+        checkout.find("1. Separe os produtos").unwrap()
+            < checkout.find("2. Buscar família por nome ou referência").unwrap()
+    );
 }
 #[test]
 fn two_connections_cannot_duplicate_a_withdrawal() {

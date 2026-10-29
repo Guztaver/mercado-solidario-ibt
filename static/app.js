@@ -21,7 +21,7 @@
       const credit = Number(family.selectedOptions[0]?.dataset.credit || 0);
       document.getElementById('cart-total').textContent = format(total) + ' créditos';
       const balance = document.getElementById('cart-balance');
-      balance.textContent = family.value ? `Crédito mensal: ${format(credit)} · Saldo após a entrega: ${format(credit - total)}` : 'Escolha uma família para ver o saldo.';
+      balance.textContent = family.value ? `Crédito mensal: ${format(credit)} · Saldo após a entrega: ${format(credit - total)}` : 'Total calculado. Escolha uma família para conferir o saldo.';
       balance.classList.toggle('negative', total > credit);
     };
     familySearch.addEventListener('input', () => {

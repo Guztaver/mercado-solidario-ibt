@@ -50,7 +50,7 @@ try {
   await save('product',{name:'Feijão QA',unit:'1 kg',minimum:'5',price:'3,50'});
   await save('donation',{product_id:'1',donor:'Doador fictício',quantity:'10',value:'50,00',code:'QA-ARROZ',received_on:today,expires_on:later});
   await save('donation',{product_id:'2',donor:'Doador fictício',quantity:'10',value:'35,00',code:'QA-FEIJAO',received_on:today,expires_on:later});
-  r=await req('/atendimento');check(r.html.includes('QA-001'), 'Eligible family visible at checkout');
+  r=await req('/atendimento');check(r.html.includes('QA-001'), 'Eligible family visible at checkout');check(r.html.indexOf('1. Separe os produtos')<r.html.indexOf('2. Buscar família por nome ou referência'),'Products are selected before the family in one checkout screen');
   const key=r.html.match(/name="request_key"[^>]*value="([^"]+)"/)[1];
   await save('checkout',{enrollment_id:'1',request_key:key,qty_1:'2',qty_2:'3'});
   r=await req('/atendimento');check(!r.html.includes('value="1" data-credit='),'Served family removed from eligible list');
