@@ -7,7 +7,8 @@
 
 /* Ajustes de navegação e conteúdo para celulares estreitos. */
 @media screen and (max-width:900px){
-  .app-shell,.workspace,main{width:100%;min-width:0}
+  html,body,.app-shell,.workspace,main{width:100%;min-width:0;max-width:100%}
+  html,body,.app-shell{overflow-x:clip}
   .sidebar{padding:16px 0 0}
   .sidebar>.brand{padding:0 18px}
   .sidebar nav{scrollbar-width:thin;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;padding:2px 14px 12px}
