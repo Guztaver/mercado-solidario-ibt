@@ -1,0 +1,36 @@
+services:
+  app:
+    image: "${APP_IMAGE:-mercado-solidario-ibt:2026-10-29-search}"
+    container_name: mercado-solidario-ibt
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_PATH: /data/mercado.db
+      COOKIE_SECURE: "true"
+    volumes:
+      - mercado_data:/data
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    tmpfs:
+      - /tmp:size=32m
+    mem_limit: 512m
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      proxy_net:
+        aliases:
+          - mercado-solidario-ibt
+
+volumes:
+  mercado_data:
+    name: mercado-solidario-ibt-data
+
+networks:
+  proxy_net:
+    external: true
