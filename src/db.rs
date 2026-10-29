@@ -13,7 +13,19 @@ pub fn today() -> NaiveDate {
 pub fn init(c: &Connection) -> rusqlite::Result<()> {
     c.busy_timeout(std::time::Duration::from_secs(10))?;
     c.execute_batch("PRAGMA journal_mode=WAL; PRAGMA synchronous=FULL; PRAGMA foreign_keys=ON;")?;
-    c.execute_batch(include_str!("schema.sql"))
+    c.execute_batch(include_str!("schema.sql"))?;
+    let has_barcode: bool = c.query_row(
+        "SELECT EXISTS(SELECT 1 FROM pragma_table_info('products') WHERE name='barcode')",
+        [],
+        |row| row.get(0),
+    )?;
+    if !has_barcode {
+        c.execute("ALTER TABLE products ADD COLUMN barcode TEXT", [])?;
+    }
+    c.execute_batch(
+        "CREATE UNIQUE INDEX IF NOT EXISTS idx_products_barcode ON products(barcode) WHERE barcode IS NOT NULL AND barcode<>'';
+         INSERT OR IGNORE INTO schema_version(version) VALUES(2);",
+    )
 }
 pub fn text(f: &Form, key: &str, max: usize) -> Result<String> {
     let v = f.get(key).map(|s| s.trim()).unwrap_or("");
@@ -186,14 +198,32 @@ pub fn apply(c: &mut Connection, user: i64, role: &str, action: &str, f: &Form) 
         "product" => {
             let name = text(f, "name", 100)?;
             let unit = text(f, "unit", 30)?;
+            let barcode = f.get("barcode").map(|value| value.trim()).unwrap_or("");
+            if !barcode.is_empty()
+                && (!(8..=14).contains(&barcode.len())
+                    || !barcode.bytes().all(|byte| byte.is_ascii_digit()))
+            {
+                return Err("O código de barras deve conter de 8 a 14 números.".into());
+            }
+            if !barcode.is_empty()
+                && tx
+                    .query_row(
+                        "SELECT EXISTS(SELECT 1 FROM products WHERE barcode=?1)",
+                        [barcode],
+                        |row| row.get::<_, bool>(0),
+                    )
+                    .map_err(db_err)?
+            {
+                return Err("Este código de barras já está cadastrado em outro produto.".into());
+            }
             let minimum = num(f, "minimum", 0, 1000000)?;
             let price = amount(f, "price")?;
             if price <= 0 {
                 return Err("O preço em créditos deve ser positivo.".into());
             }
             tx.execute(
-                "INSERT INTO products(name,unit,minimum) VALUES(?1,?2,?3)",
-                params![name, unit, minimum],
+                "INSERT INTO products(name,barcode,unit,minimum) VALUES(?1,?2,?3,?4)",
+                params![name, if barcode.is_empty() { None } else { Some(barcode) }, unit, minimum],
             )
             .map_err(db_err)?;
             let id = tx.last_insert_rowid();

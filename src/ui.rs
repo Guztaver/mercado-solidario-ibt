@@ -350,7 +350,7 @@ fn stock(c: &Connection, u: &User) -> R<AnyView> {
     let day = db::today().to_string();
     let rows = db::rows(
         c,
-        "SELECT p.id,p.name,p.unit,COALESCE((SELECT pr.credits FROM prices pr WHERE pr.product_id=p.id AND pr.effective_date<=?1 ORDER BY pr.effective_date DESC LIMIT 1),0),COALESCE((SELECT sum(remaining) FROM lots l WHERE l.product_id=p.id AND l.expires_on>=?1),0),p.minimum,COALESCE((SELECT sum(remaining) FROM lots l WHERE l.product_id=p.id AND l.expires_on<?1),0) FROM products p ORDER BY p.name",
+        "SELECT p.id,p.name,p.unit,COALESCE((SELECT pr.credits FROM prices pr WHERE pr.product_id=p.id AND pr.effective_date<=?1 ORDER BY pr.effective_date DESC LIMIT 1),0),COALESCE((SELECT sum(remaining) FROM lots l WHERE l.product_id=p.id AND l.expires_on>=?1),0),p.minimum,COALESCE((SELECT sum(remaining) FROM lots l WHERE l.product_id=p.id AND l.expires_on<?1),0),COALESCE(p.barcode,'') FROM products p ORDER BY p.name",
         &[&day],
     )?;
     let lots = db::rows(
@@ -363,6 +363,7 @@ fn stock(c: &Connection, u: &User) -> R<AnyView> {
         &u.csrf,
         vec![
             field("name", "Nome do produto", "text", ""),
+            optional_barcode_field(),
             field("unit", "Unidade / embalagem", "text", "unidade"),
             field("minimum", "Estoque mínimo (unidades)", "number", "5"),
             credit("price", "Preço em créditos por unidade", "5,00"),
@@ -383,7 +384,7 @@ fn stock(c: &Connection, u: &User) -> R<AnyView> {
         &[],
     )?;
     Ok(av(view! {
-        {panel("Produtos & disponibilidade","O estoque disponível exclui lotes vencidos. Créditos são valores sociais, separados do valor das doações.",table(vec!["Código","Produto","Embalagem","Créditos / un.","Disponível","Mínimo","Vencidos"],formatted(rows,&[3])))}
+        <section class="panel"><div class="panel-head"><div><h2>"Produtos & disponibilidade"</h2><p>"Consulte pelo nome ou código de barras. Leitores USB/Bluetooth que digitam o código funcionam diretamente neste campo."</p></div></div><label class="field"><span>"Buscar produto ou código de barras"</span><input type="search" data-table-search autocomplete="off" placeholder="" aria-label="Buscar produto pelo nome ou código de barras"/></label><div class="table-wrap"><table data-searchable><thead><tr>{vec!["Código","Produto","Embalagem","Créditos / un.","Disponível","Mínimo","Vencidos"].into_iter().map(|h|view!{<th scope="col">{h}</th>}).collect_view()}</tr></thead><tbody>{formatted(rows,&[3]).into_iter().map(|r|view!{<tr><td>{r[7].clone()}</td><td>{r[1].clone()}</td><td>{r[2].clone()}</td><td>{r[3].clone()}</td><td>{r[4].clone()}</td><td>{r[5].clone()}</td><td>{r[6].clone()}</td></tr>}).collect_view()}</tbody></table></div></section>
         {disclosure("Cadastrar um novo produto",new)}
         {panel("Lotes em estoque","A saída prioriza o lote com validade mais próxima (FEFO). O valor informado é o valor total do lote em reais.",table(vec!["ID","Produto","Lote","Validade","Recebido","Saldo","Valor total R$","Doador"],formatted(lots,&[6])))}
         {admin}{disclosure("Histórico de preços · até 200 vigências",table(vec!["Produto","Vigência","Créditos / unidade"],formatted(prices,&[2])))}
@@ -600,6 +601,9 @@ fn family_card(c: &Connection, q: &HashMap<String, String>) -> R<AnyView> {
             <p class="family-card-note">"Apresente este cartão à equipe para localizar o cadastro. Ele não substitui a confirmação dos dados no sistema."</p>
         </div>
     }))
+}
+fn optional_barcode_field() -> AnyView {
+    av(view! {<label class="field"><span>"Código de barras (EAN/GTIN)"</span><input name="barcode" type="text" maxlength="14" inputmode="numeric" pattern="[0-9]{8,14}" placeholder="8 a 14 números · leitor USB/Bluetooth"/></label>})
 }
 fn receipt(c: &Connection, q: &HashMap<String, String>) -> R<AnyView> {
     let id = q.get("id").and_then(|s| s.parse::<i64>().ok()).unwrap_or(0);

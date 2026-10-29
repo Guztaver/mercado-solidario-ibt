@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS enrollments(
  group_code TEXT NOT NULL CHECK(group_code IN ('A','B')), monthly_credit INTEGER NOT NULL CHECK(monthly_credit>0 AND monthly_credit<=100000000),
  criteria TEXT NOT NULL, active INTEGER NOT NULL DEFAULT 1 CHECK(active IN (0,1)), UNIQUE(family_id,cycle_id));
 CREATE TABLE IF NOT EXISTS products(
- id INTEGER PRIMARY KEY, name TEXT NOT NULL COLLATE NOCASE UNIQUE, unit TEXT NOT NULL,
+ id INTEGER PRIMARY KEY, name TEXT NOT NULL COLLATE NOCASE UNIQUE, barcode TEXT, unit TEXT NOT NULL,
  minimum INTEGER NOT NULL CHECK(minimum>=0), active INTEGER NOT NULL DEFAULT 1 CHECK(active IN (0,1)));
 CREATE TABLE IF NOT EXISTS prices(
  id INTEGER PRIMARY KEY, product_id INTEGER NOT NULL REFERENCES products(id), effective_date TEXT NOT NULL,
