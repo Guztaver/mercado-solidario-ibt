@@ -9,7 +9,7 @@ IMAGE_REPO="mercado-solidario-ibt"
 LOG_PREFIX="mercado-solidario-ibt deploy:"
 
 mkdir -p "$RUNTIME_DIR"
-exec 9>"/var/lock/mercado-solidario-ibt-deploy.lock"
+exec 9>"$RUNTIME_DIR/.deploy.lock"
 flock -n 9 || exit 0
 
 cd "$PROJECT_DIR"
